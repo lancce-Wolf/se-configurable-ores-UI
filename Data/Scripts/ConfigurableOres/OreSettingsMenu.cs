@@ -89,8 +89,8 @@ namespace ConfigurableOres
         private static readonly List<TerminalSlider> Sliders = new List<TerminalSlider>();
         private static readonly Dictionary<TerminalSlider, int> SliderDecimals = new Dictionary<TerminalSlider, int>();
 
-        // Status text lives in category subheaders, which wrap; control names get cut off
-        // after roughly 20 characters, so they stay short and details go in tooltips.
+        // Status text lives in category subheaders. Both those and control names show one line
+        // only (about 90 and 20 characters), so they stay short and details go in tooltips.
         private static ControlCategory _statusCategory;
         private static ControlCategory _worldDepthCategory;
         private static ControlCategory _modCategory;
@@ -276,7 +276,7 @@ namespace ConfigurableOres
             Func<string> scope = () => _selectedPlanet;
 
             return Page("Planets",
-                _planetCategory = Category("Planet", "Pick a planet to edit. Planets with no ore slots aren't listed.",
+                _planetCategory = Category("Planet", "Pick a planet to edit.",
                     Tile(_planetDropdown)),
                 Category("Ores", "Ores that can spawn on this planet.",
                     Tile(_assignedOreList, _removeOreButton),
@@ -632,9 +632,12 @@ namespace ConfigurableOres
             if (!success && _inFlightCommands == 0) InFlight.Clear();
 
             var firstLine = FirstLine(output);
-            _lastResult = (success ? "Last change: " : "Not changed: ") + firstLine;
 
-            if (!success)
+            if (success)
+            {
+                MyAPIGateway.Utilities.ShowNotification($"{MOD_NAME}: {firstLine}", 3000, MyFontEnum.White);
+            }
+            else
             {
                 MyAPIGateway.Utilities.ShowNotification($"{MOD_NAME}: {firstLine}", 5000, MyFontEnum.Red);
                 if (!string.IsNullOrEmpty(output)) MyAPIGateway.Utilities.ShowMessage(MOD_CHAT_AUTHOR, output);
@@ -643,7 +646,6 @@ namespace ConfigurableOres
             RefreshText();
         }
 
-        private static string _lastResult = "";
 
         #endregion
 
@@ -736,14 +738,12 @@ namespace ConfigurableOres
             var access = !OreNetwork.HasSnapshot
                 ? "Waiting for the server..."
                 : OreNetwork.CanEdit
-                    ? "You can change these settings."
-                    : "Read only: only admins can change these settings.";
+                    ? "You can edit."
+                    : "Read only (admins can edit).";
             var restart = OreNetwork.RestartNeeded
-                ? "Settings changed. Restart the world to apply them."
-                : "No changes waiting for a restart.";
-            SetSubheader(_statusCategory, string.IsNullOrEmpty(_lastResult)
-                ? access + " " + restart
-                : access + " " + restart + " " + _lastResult);
+                ? "Restart the world to apply changes."
+                : "Nothing waiting for a restart.";
+            SetSubheader(_statusCategory, access + " " + restart);
 
             var ranges = Mod?.OreDetectorRanges;
             float large, small;
@@ -751,10 +751,8 @@ namespace ConfigurableOres
                 ranges.TryGetValue(MyCubeSize.Small, out small))
             {
                 var cap = Config?.DetectorDepthCap ?? 0;
-                var text = $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m. ";
-                text += cap > 0
-                    ? $"With \"Use detector range\" on, ore goes no deeper than {cap} m."
-                    : "Depth cap: off (0). Set it to limit how deep ore goes when \"Use detector range\" is on.";
+                var text = $"Detector range: large {large:0} m, small {small:0} m. ";
+                text += cap > 0 ? $"Depth cap: {cap} m." : "Depth cap: off.";
                 SetSubheader(_worldDepthCategory, text);
             }
 
@@ -762,15 +760,15 @@ namespace ConfigurableOres
             if (config != null)
             {
                 SetSubheader(_modCategory, config.DisableChatCommands
-                    ? "Chat commands are disabled. Edit ConfigurableOres.xml to turn them back on."
-                    : $"Chat commands ({COMMAND_PREFIX}) are enabled.");
+                    ? "Chat commands off (re-enable in ConfigurableOres.xml)."
+                    : $"Chat commands ({COMMAND_PREFIX}) on.");
                 _disableChatButton.Enabled = OreNetwork.CanEdit && !config.DisableChatCommands;
             }
 
             var planet = SelectedPlanetConfig;
             SetSubheader(_planetCategory, planet == null
-                ? "Pick a planet to edit. Planets with no ore slots aren't listed."
-                : $"{planet.OreSlotCount} ore slots, {planet.GetAssignedOres().Distinct().Count()} ores assigned. Planets with no ore slots aren't listed.");
+                ? "Pick a planet to edit."
+                : $"{planet.OreSlotCount} ore slots, {planet.GetAssignedOres().Distinct().Count()} ores assigned.");
 
             foreach (var slider in Sliders)
                 slider.ValueText = FormatNumber(slider.Value, SliderDecimals[slider]);
