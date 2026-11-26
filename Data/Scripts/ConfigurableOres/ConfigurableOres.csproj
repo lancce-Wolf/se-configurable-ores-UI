@@ -91,4 +91,31 @@
       <None Remove="obj\**" />
     </ItemGroup>
 
+    <!--
+        After each build on Windows, copy the mod into the game's Mods folder so it can be
+        loaded in game as a local mod. The game compiles the .cs files itself; the DLL Rider
+        builds is only a compile check. Override the target with -p:ModDeployDir=...
+        or turn it off with -p:ModDeployDir=none.
+    -->
+    <PropertyGroup>
+        <ModRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\..\'))</ModRoot>
+        <ModDeployDir Condition="'$(ModDeployDir)' == '' And '$(OS)' == 'Windows_NT'">$(APPDATA)\SpaceEngineers\Mods\ConfigurableOresUI\</ModDeployDir>
+    </PropertyGroup>
+
+    <Target Name="DeployMod" AfterTargets="Build"
+            Condition="'$(ModDeployDir)' != '' And '$(ModDeployDir)' != 'none' And '$([System.IO.Path]::GetFullPath($(ModDeployDir)).TrimEnd(`\`))' != '$(ModRoot.TrimEnd(`\`))'">
+        <ItemGroup>
+            <ModScripts Include="$(MSBuildProjectDirectory)\**\*.cs"
+                        Exclude="$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
+            <ModRootFiles Include="$(ModRoot)metadata.mod;$(ModRoot)thumb.jpg;$(ModRoot)LICENSE" />
+        </ItemGroup>
+
+        <!-- Start clean so files deleted from the project don't linger in the game's copy. -->
+        <RemoveDir Directories="$(ModDeployDir)Data" />
+        <Copy SourceFiles="@(ModScripts)"
+              DestinationFiles="@(ModScripts->'$(ModDeployDir)Data\Scripts\ConfigurableOres\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(ModRootFiles)" DestinationFolder="$(ModDeployDir)" Condition="Exists('%(FullPath)')" />
+        <Message Importance="high" Text="Copied mod to $(ModDeployDir)" />
+    </Target>
+
 </Project>
