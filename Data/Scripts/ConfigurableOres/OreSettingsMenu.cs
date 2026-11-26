@@ -89,17 +89,17 @@ namespace ConfigurableOres
         private static readonly List<TerminalSlider> Sliders = new List<TerminalSlider>();
         private static readonly Dictionary<TerminalSlider, int> SliderDecimals = new Dictionary<TerminalSlider, int>();
 
-        private static TerminalLabel _statusAccess;
-        private static TerminalLabel _statusRestart;
-        private static TerminalLabel _statusResult;
-        private static TerminalLabel _detectorRanges;
-        private static TerminalLabel _chatCommandsState;
+        // Status text lives in category subheaders, which wrap; control names get cut off
+        // after roughly 20 characters, so they stay short and details go in tooltips.
+        private static ControlCategory _statusCategory;
+        private static ControlCategory _worldDepthCategory;
+        private static ControlCategory _modCategory;
+        private static ControlCategory _planetCategory;
         private static TerminalButton _disableChatButton;
         private static bool _disableChatArmed;
 
         private static TerminalDropdown<string> _planetDropdown;
         private static TerminalDropdown<string> _orePagePlanetDropdown;
-        private static TerminalLabel _planetInfo;
         private static TerminalList<string> _assignedOreList;
         private static TerminalButton _removeOreButton;
         private static TerminalDropdown<string> _addOreDropdown;
@@ -215,25 +215,21 @@ namespace ConfigurableOres
 
         private static ControlPage BuildStatusPage()
         {
-            _statusAccess = new TerminalLabel { Name = "Waiting for the server..." };
-            _statusRestart = new TerminalLabel { Name = "" };
-            _statusResult = new TerminalLabel { Name = "" };
-
-            var rebuild = AdminButton("Regenerate ore placement",
+            var rebuild = AdminButton("Regenerate ores",
                 "Re-rolls deposit depths and sizes on every planet using the current settings. Applies after a world restart.",
                 () => Send("World Rebuild"));
 
-            var resetDepth = AdminButton("Reset world depth settings", "Puts every world depth setting back to its default.",
+            var resetDepth = AdminButton("Reset world depth", "Puts every world depth setting back to its default.",
                 () => Send("World Depth Reset"));
 
-            var resetSize = AdminButton("Reset world size settings", "Puts every world size setting back to its default.",
+            var resetSize = AdminButton("Reset world size", "Puts every world size setting back to its default.",
                 () => Send("World Size Reset"));
 
-            return Page("Status",
-                Category("Configurable Ores", MODINFO_VERSION_TEXT,
-                    Tile(_statusAccess, _statusRestart, _statusResult)),
-                Category("Actions", "Changes apply after the world is restarted.",
-                    Tile(rebuild, resetDepth, resetSize)));
+            // One category: an empty one may not render, and the buttons belong with the status.
+            _statusCategory = Category(MODINFO_VERSION_TEXT, "Waiting for the server...",
+                Tile(rebuild, resetDepth, resetSize));
+
+            return Page("Status", _statusCategory);
         }
 
         private static ControlPage BuildWorldPage(bool isDepth)
@@ -242,13 +238,13 @@ namespace ConfigurableOres
 
             if (isDepth)
             {
-                _detectorRanges = new TerminalLabel { Name = "" };
-                var cap = Slider("Depth cap with detector range (0 = off)", Help("depth_detector_cap"),
+                var cap = Slider("Depth cap", Help("depth_detector_cap"),
                     0, 5000, 0, () => Config?.DetectorDepthCap, () => "World Depth DetectorCap");
 
+                _worldDepthCategory = Category("World depth", "", Tile(cap));
+
                 return Page("World depth",
-                    Category("World depth", "How deep ore deposits are placed on every planet, unless a planet or ore overrides it.",
-                        Tile(_detectorRanges, cap)),
+                    _worldDepthCategory,
                     DepthCategory("Settings", () => Config?.Depth, scope));
             }
 
@@ -260,11 +256,10 @@ namespace ConfigurableOres
         {
             _planetDropdown = new TerminalDropdown<string> { Name = "Planet" };
             _planetDropdown.ControlChanged += (s, a) => OnPlanetPicked(_planetDropdown);
-            _planetInfo = new TerminalLabel { Name = "" };
 
-            _assignedOreList = new TerminalList<string> { Name = "Ores on this planet" };
+            _assignedOreList = new TerminalList<string> { Name = "Ores on planet" };
 
-            _removeOreButton = AdminButton("Remove selected ore", "Takes the ore selected above off this planet.", () =>
+            _removeOreButton = AdminButton("Remove ore", "Takes the ore selected above off this planet.", () =>
             {
                 var ore = _assignedOreList.Value?.AssocObject;
                 if (_selectedPlanet != null && ore != null) Send($"{_selectedPlanet} Del {ore}");
@@ -281,8 +276,8 @@ namespace ConfigurableOres
             Func<string> scope = () => _selectedPlanet;
 
             return Page("Planets",
-                Category("Planet", "Pick a planet to edit. Planets with no ore slots aren't listed.",
-                    Tile(_planetDropdown, _planetInfo)),
+                _planetCategory = Category("Planet", "Pick a planet to edit. Planets with no ore slots aren't listed.",
+                    Tile(_planetDropdown)),
                 Category("Ores", "Ores that can spawn on this planet.",
                     Tile(_assignedOreList, _removeOreButton),
                     Tile(_addOreDropdown, _addOreButton)),
@@ -324,30 +319,30 @@ namespace ConfigurableOres
             var logging = OnOff("Logging", Help("mod_logging"), () => Config?.Logging,
                 () => "World Mod Logging");
 
-            var hideMenu = OnOff("Hide this menu from non-admins", Help("mod_hide_menu"),
+            var hideMenu = OnOff("Hide from non-admins", Help("mod_hide_menu"),
                 () => Config?.HideMenuFromNonAdmins, () => "World Mod HideMenu");
 
-            _chatCommandsState = new TerminalLabel { Name = "" };
-            _disableChatButton = AdminButton("Disable chat commands",
+            _disableChatButton = AdminButton("Disable chat cmds",
                 "Turns off /ore chat commands for everyone. This menu keeps working. Press twice to confirm.",
                 () =>
                 {
                     if (!_disableChatArmed)
                     {
                         _disableChatArmed = true;
-                        _disableChatButton.Name = "Press again to disable chat commands";
+                        _disableChatButton.Name = "Press to confirm";
                         return;
                     }
 
                     _disableChatArmed = false;
-                    _disableChatButton.Name = "Disable chat commands";
+                    _disableChatButton.Name = "Disable chat cmds";
                     Send("World Mod Confirm DisableChatCommands");
                 });
 
-            return Page("Mod",
-                Category("Mod settings", "",
-                    Tile(logging, hideMenu),
-                    Tile(_chatCommandsState, _disableChatButton)));
+            _modCategory = Category("Mod settings", "",
+                Tile(logging, hideMenu),
+                Tile(_disableChatButton));
+
+            return Page("Mod", _modCategory);
         }
 
         private static TextPage BuildHelpPage()
@@ -388,15 +383,15 @@ namespace ConfigurableOres
         {
             Func<string, Func<string>> cmd = item => () => scope() == null ? null : $"{scope()} Depth {item}";
 
-            var min = Slider("Minimum depth", Hint("depth_min"), 0, 500, 0, () => settings()?.Min, cmd("Min"));
-            var max = Slider("Maximum depth", Hint("depth_max"), 1, 2000, 0, () => settings()?.Max, cmd("Max"));
-            var useDetector = OnOff("Max depth from ore detector range", Help("depth_use_detector"),
+            var min = Slider("Min depth", Hint("depth_min"), 0, 500, 0, () => settings()?.Min, cmd("Min"));
+            var max = Slider("Max depth", Hint("depth_max"), 1, 2000, 0, () => settings()?.Max, cmd("Max"));
+            var useDetector = OnOff("Use detector range", Help("depth_use_detector"),
                 () => settings()?.UseDetector, cmd("UseDetector"));
-            var progressive = OnOff("Progressive depth", Help("depth_use_progressive"),
+            var progressive = OnOff("Progressive", Help("depth_use_progressive"),
                 () => settings()?.UseProgressive, cmd("UseProgressive"));
-            var curve = Slider("Depth curve", Help("depth_curve"), 0.1f, 3f, 2, () => settings()?.Curve, cmd("Curve"));
-            var fuzz = Slider("Depth fuzz", Help("depth_fuzz"), 0.01f, 2f, 2, () => settings()?.Fuzz, cmd("Fuzz"));
-            var factor = Slider("Detector range factor", Help("depth_detector_factor"), 0.1f, 5f, 2,
+            var curve = Slider("Curve", Help("depth_curve"), 0.1f, 3f, 2, () => settings()?.Curve, cmd("Curve"));
+            var fuzz = Slider("Fuzz", Help("depth_fuzz"), 0.01f, 2f, 2, () => settings()?.Fuzz, cmd("Fuzz"));
+            var factor = Slider("Detector factor", Help("depth_detector_factor"), 0.1f, 5f, 2,
                 () => settings()?.DetectorFactor, cmd("DetectorFactor"));
             var detectorSize = DetectorSizeDropdown(settings, cmd("DetectorSize"));
 
@@ -412,10 +407,10 @@ namespace ConfigurableOres
         {
             Func<string, Func<string>> cmd = item => () => scope() == null ? null : $"{scope()} Size {item}";
 
-            var min = Slider("Minimum size", Hint("size_min"), 1, 100, 0, () => settings()?.Min, cmd("Min"));
-            var max = Slider("Maximum size", Hint("size_max"), 1, 200, 0, () => settings()?.Max, cmd("Max"));
-            var factor = Slider("Size factor", Help("size_factor"), 0.01f, 1f, 2, () => settings()?.Factor, cmd("Factor"));
-            var fuzz = Slider("Size fuzz", Help("size_fuzz"), 0.01f, 2f, 2, () => settings()?.Fuzz, cmd("Fuzz"));
+            var min = Slider("Min size", Hint("size_min"), 1, 100, 0, () => settings()?.Min, cmd("Min"));
+            var max = Slider("Max size", Hint("size_max"), 1, 200, 0, () => settings()?.Max, cmd("Max"));
+            var factor = Slider("Factor", Help("size_factor"), 0.01f, 1f, 2, () => settings()?.Factor, cmd("Factor"));
+            var fuzz = Slider("Fuzz", Help("size_fuzz"), 0.01f, 2f, 2, () => settings()?.Fuzz, cmd("Fuzz"));
 
             return Category(header, "How big ore deposits are.",
                 Tile(min, max),
@@ -503,7 +498,7 @@ namespace ConfigurableOres
 
         private static TerminalDropdown<MyCubeSize> DetectorSizeDropdown(Func<MyDepthSettings> settings, Func<string> command)
         {
-            var dropdown = new TerminalDropdown<MyCubeSize> { Name = "Detector used for max depth" };
+            var dropdown = new TerminalDropdown<MyCubeSize> { Name = "Detector size" };
             dropdown.ToolTip = Help("depth_detector_size");
             dropdown.List.Add("Large grid", MyCubeSize.Large);
             dropdown.List.Add("Small grid", MyCubeSize.Small);
@@ -738,17 +733,17 @@ namespace ConfigurableOres
         {
             if (!_built) return;
 
-            SetName(_statusAccess, !OreNetwork.HasSnapshot
+            var access = !OreNetwork.HasSnapshot
                 ? "Waiting for the server..."
                 : OreNetwork.CanEdit
                     ? "You can change these settings."
-                    : "Read only: only admins can change these settings.");
-
-            SetName(_statusRestart, OreNetwork.RestartNeeded
+                    : "Read only: only admins can change these settings.";
+            var restart = OreNetwork.RestartNeeded
                 ? "Settings changed. Restart the world to apply them."
-                : "No changes waiting for a restart.");
-
-            SetName(_statusResult, _lastResult);
+                : "No changes waiting for a restart.";
+            SetSubheader(_statusCategory, string.IsNullOrEmpty(_lastResult)
+                ? access + " " + restart
+                : access + " " + restart + " " + _lastResult);
 
             var ranges = Mod?.OreDetectorRanges;
             float large, small;
@@ -756,32 +751,34 @@ namespace ConfigurableOres
                 ranges.TryGetValue(MyCubeSize.Small, out small))
             {
                 var cap = Config?.DetectorDepthCap ?? 0;
-                SetName(_detectorRanges, cap > 0
-                    ? $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m. Ore is capped at {cap} m."
-                    : $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m");
+                var text = $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m. ";
+                text += cap > 0
+                    ? $"With \"Use detector range\" on, ore goes no deeper than {cap} m."
+                    : "Depth cap: off (0). Set it to limit how deep ore goes when \"Use detector range\" is on.";
+                SetSubheader(_worldDepthCategory, text);
             }
 
             var config = Config;
             if (config != null)
             {
-                SetName(_chatCommandsState, config.DisableChatCommands
+                SetSubheader(_modCategory, config.DisableChatCommands
                     ? "Chat commands are disabled. Edit ConfigurableOres.xml to turn them back on."
                     : $"Chat commands ({COMMAND_PREFIX}) are enabled.");
                 _disableChatButton.Enabled = OreNetwork.CanEdit && !config.DisableChatCommands;
             }
 
             var planet = SelectedPlanetConfig;
-            SetName(_planetInfo, planet == null
-                ? ""
-                : $"{planet.OreSlotCount} ore slots, {planet.GetAssignedOres().Distinct().Count()} ores assigned");
+            SetSubheader(_planetCategory, planet == null
+                ? "Pick a planet to edit. Planets with no ore slots aren't listed."
+                : $"{planet.OreSlotCount} ore slots, {planet.GetAssignedOres().Distinct().Count()} ores assigned. Planets with no ore slots aren't listed.");
 
             foreach (var slider in Sliders)
                 slider.ValueText = FormatNumber(slider.Value, SliderDecimals[slider]);
         }
 
-        private static void SetName(TerminalControlBase control, string name)
+        private static void SetSubheader(ControlCategory category, string text)
         {
-            if (control != null && control.Name != name) control.Name = name;
+            if (category != null && category.SubheaderText != text) category.SubheaderText = text;
         }
 
         #endregion
