@@ -282,10 +282,10 @@ namespace ConfigurableOres
                 $"<Block Size>: \"Large\" or \"Small\"");
             AddHelp("depth_detector_size",
                 $"Must be set to either Large or Small. This is the grid size of the ore detector whose max range will be used when {Item("depth_use_detector")} is enabled. In the Vanilla game, Large Ore Detector has the longest range. If you use modded ore detectors or want an easier game, you could set this to Small.");
-            AddMenu("depth_detector_cap", "DetectorCap",
-                "<Meters>: Deepest ore when using detector range (0 = no cap)");
+            AddMenu("depth_detector_cap", "Cap",
+                "<Meters>: Deepest any ore may be placed (0 = no cap)");
             AddHelp("depth_detector_cap",
-                $"{Item("depth_detector_cap")}: When {Item("depth_use_detector")} is enabled, ore deposits are never placed deeper than this many meters, however long the ore detector's range is. Useful with mods that give detectors very long ranges. 0 turns the cap off. Applies to the whole world.");
+                $"{Item("depth_detector_cap")}: No ore deposit on any planet is placed deeper than this many meters, whatever the other depth settings say. With {Item("depth_use_detector")} on, depths are scaled to fit under the cap, which helps with mods that give detectors very long ranges. 0 turns the cap off.");
             AddMenu("depth_detector_factor", "DetectorFactor",
                 "<Float>: % of detector range for auto depth");
             AddHelp("depth_detector_factor",

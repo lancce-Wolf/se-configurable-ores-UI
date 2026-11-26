@@ -239,7 +239,7 @@ namespace ConfigurableOres
             if (isDepth)
             {
                 var cap = Slider("Depth cap", Help("depth_detector_cap"),
-                    0, 5000, 0, () => Config?.DetectorDepthCap, () => "World Depth DetectorCap");
+                    0, 5000, 0, () => Config?.DetectorDepthCap, () => "World Depth Cap");
 
                 _worldDepthCategory = Category("World depth", "", Tile(cap));
 

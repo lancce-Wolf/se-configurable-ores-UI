@@ -722,7 +722,7 @@ namespace ConfigurableOres
             {
                 depthRange = Depth.DetectorFactor * Session.OreDetectorRanges[Depth.DetectorSize];
 
-                // Never deeper than the world's cap, even with a detector factor above 1.
+                // Scale into the world's depth cap rather than piling every deep deposit at the cap.
                 var cap = Session.Config.DetectorDepthCap;
                 if (cap > 0 && depthRange > cap - DEFAULT_ORE_DEPTH_MIN) depthRange = cap - DEFAULT_ORE_DEPTH_MIN;
             }
@@ -750,12 +750,19 @@ namespace ConfigurableOres
 
             if (Depth.UseDetector)
             {
-                return depth + DEFAULT_ORE_DEPTH_MIN;
+                return ApplyDepthCap(depth + DEFAULT_ORE_DEPTH_MIN);
             }
 
             if (depth > Depth.Max) depth = Depth.Max;
 
-            return depth + Depth.Min;
+            return ApplyDepthCap(depth + Depth.Min);
+        }
+
+        /// <summary>The world's depth cap is a hard limit, whichever way depth was worked out.</summary>
+        private static float ApplyDepthCap(float depth)
+        {
+            var cap = Session.Config.DetectorDepthCap;
+            return cap > 0 && depth > cap ? cap : depth;
         }
 
         private float GenDepositSize(int slotNumber)
