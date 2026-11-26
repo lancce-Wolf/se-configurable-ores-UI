@@ -2,7 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- The game compiles scripts without implicit usings; enabling them here makes Task ambiguous in Rich HUD code. -->
+        <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>6</LangVersion>
     </PropertyGroup>
