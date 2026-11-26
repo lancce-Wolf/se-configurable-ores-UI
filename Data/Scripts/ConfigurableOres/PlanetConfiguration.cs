@@ -129,7 +129,7 @@ namespace ConfigurableOres
             // if we are already configured, we probably shouldn't be here.
             if (GeneratedPlanetOreMappings.Count >= 1 || AssignedOres.Count >= 1) return;
 
-            if (Depth.UseDetector) Depth.Max = (int)Session.DepthRangeFromDetector(Config.Depth.DetectorSize);
+            if (Depth.UseDetector) Depth.Max = (int)Session.OreDetectorRanges[Config.Depth.DetectorSize];
 
             // If there are no ore slots (ex. Overvent) then don't continue.
             if (!planetOreMappings.Any()) return;
@@ -721,10 +721,6 @@ namespace ConfigurableOres
             if (Depth.UseDetector)
             {
                 depthRange = Depth.DetectorFactor * Session.OreDetectorRanges[Depth.DetectorSize];
-
-                // Scale into the world's depth cap rather than piling every deep deposit at the cap.
-                var cap = Session.Config.DetectorDepthCap;
-                if (cap > 0 && depthRange > cap - DEFAULT_ORE_DEPTH_MIN) depthRange = cap - DEFAULT_ORE_DEPTH_MIN;
             }
 
             //LogVar("depthRange", depthRange);
@@ -750,19 +746,12 @@ namespace ConfigurableOres
 
             if (Depth.UseDetector)
             {
-                return ApplyDepthCap(depth + DEFAULT_ORE_DEPTH_MIN);
+                return depth + DEFAULT_ORE_DEPTH_MIN;
             }
 
             if (depth > Depth.Max) depth = Depth.Max;
 
-            return ApplyDepthCap(depth + Depth.Min);
-        }
-
-        /// <summary>The world's depth cap is a hard limit, whichever way depth was worked out.</summary>
-        private static float ApplyDepthCap(float depth)
-        {
-            var cap = Session.Config.DetectorDepthCap;
-            return cap > 0 && depth > cap ? cap : depth;
+            return depth + Depth.Min;
         }
 
         private float GenDepositSize(int slotNumber)

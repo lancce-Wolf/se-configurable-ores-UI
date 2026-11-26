@@ -238,14 +238,10 @@ namespace ConfigurableOres
 
             if (isDepth)
             {
-                var cap = Slider("Depth cap", Help("depth_detector_cap"),
-                    0, 5000, 0, () => Config?.DetectorDepthCap, () => "World Depth Cap");
+                // Subheader is filled in by RefreshText with the detector ranges.
+                _worldDepthCategory = DepthCategory("World depth (default for all planets)", () => Config?.Depth, scope);
 
-                _worldDepthCategory = Category("World depth", "", Tile(cap));
-
-                return Page("World depth",
-                    _worldDepthCategory,
-                    DepthCategory("Settings", () => Config?.Depth, scope));
+                return Page("World depth", _worldDepthCategory);
             }
 
             return Page("World size",
@@ -750,10 +746,8 @@ namespace ConfigurableOres
             if (ranges != null && ranges.TryGetValue(MyCubeSize.Large, out large) &&
                 ranges.TryGetValue(MyCubeSize.Small, out small))
             {
-                var cap = Config?.DetectorDepthCap ?? 0;
-                var text = $"Detector range: large {large:0} m, small {small:0} m. ";
-                text += cap > 0 ? $"Depth cap: {cap} m." : "Depth cap: off.";
-                SetSubheader(_worldDepthCategory, text);
+                SetSubheader(_worldDepthCategory,
+                    $"Changing these overwrites every planet. Detector range: large {large:0} m, small {small:0} m.");
             }
 
             var config = Config;

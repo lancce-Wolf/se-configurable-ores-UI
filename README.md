@@ -10,8 +10,8 @@ This fork adds a settings menu built on [Rich HUD Master](https://steamcommunity
 ### What's in the menu
 
 - **Status**: whether you can edit, whether a restart is needed, the result of your last change, and buttons to regenerate ore placement or reset world settings.
-- **World depth / World size**: the settings that apply to every planet, including a depth cap that no ore goes below (useful with detector-range mods; `/ore world depth cap 300`).
-- **Planets**: pick a planet, add or remove ores, and override depth and size for that planet.
+- **World depth / World size**: the settings that apply to every planet. Changing a world setting also overwrites that setting on every planet.
+- **Planets**: pick a planet, add or remove ores, and set depth (min, max) and size for that planet. Turn off "Use detector range" there for Max depth to apply. With a detector-range mod, setting depth per planet is the way to keep ore reachable.
 - **Planet ores**: pick a planet and one of its ores, then set its rarity and override its depth and size.
 - **Mod**: logging, hiding the menu from non-admins, and disabling chat commands.
 - **Help**: what each setting does.
