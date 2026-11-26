@@ -12,6 +12,7 @@
         Directory.Build.props, e.g. dotnet build -p:SEBin64="C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64"
     -->
     <PropertyGroup>
+        <SEBin64 Condition="'$(SEBin64)' == '' And Exists('C:\_Steam 4TB M2\steamapps\common\SpaceEngineers\Bin64')">C:\_Steam 4TB M2\steamapps\common\SpaceEngineers\Bin64</SEBin64>
         <SEBin64 Condition="'$(SEBin64)' == '' And Exists('C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64')">C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64</SEBin64>
         <SEBin64 Condition="'$(SEBin64)' == ''">..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64</SEBin64>
     </PropertyGroup>
