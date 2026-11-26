@@ -206,6 +206,17 @@ namespace ConfigurableOres
 
         #region Data Loading
 
+        /// <summary>
+        /// The detector range used for ore depth: the longest detector of that grid size,
+        /// limited by the world's DetectorDepthCap when one is set.
+        /// </summary>
+        public float DepthRangeFromDetector(MyCubeSize size)
+        {
+            var range = OreDetectorRanges[size];
+            var cap = Config?.DetectorDepthCap ?? 0;
+            return cap > 0 && range > cap ? cap : range;
+        }
+
         private void LoadOreDetectorMaxRanges()
         {
             /*
@@ -913,6 +924,7 @@ namespace ConfigurableOres
                 menuText.AppendLine(MenuLine(breadcrumbs, "depth_fuzz"));
                 menuText.AppendLine(MenuLine(breadcrumbs, "depth_detector_size"));
                 menuText.AppendLine(MenuLine(breadcrumbs, "depth_detector_factor"));
+                menuText.AppendLine(MenuLine(breadcrumbs, "depth_detector_cap"));
 
                 WriteToChat(menuText.ToString());
                 return true;
@@ -941,7 +953,8 @@ namespace ConfigurableOres
                     { Item("depth_curve"), Config.Depth.Curve.ToString(CultureInfo.CurrentCulture) },
                     { Item("depth_fuzz"), Config.Depth.Fuzz.ToString(CultureInfo.CurrentCulture) },
                     { Item("depth_detector_size"), Config.Depth.DetectorSize.ToString() },
-                    { Item("depth_detector_factor"), Config.Depth.DetectorFactor.ToString(CultureInfo.CurrentCulture) }
+                    { Item("depth_detector_factor"), Config.Depth.DetectorFactor.ToString(CultureInfo.CurrentCulture) },
+                    { Item("depth_detector_cap"), Config.DetectorDepthCap.ToString(CultureInfo.CurrentCulture) }
                 };
                 WriteToChat(DisplaySettings(breadcrumbs, settings));
                 return true;
@@ -1111,6 +1124,22 @@ namespace ConfigurableOres
                 if (!parsed.Item1) return false;
 
                 Config.Depth.SetDetectorFactor(parsed.Item2);
+                WriteConfirmationToChat(item, parsed.Item2);
+
+                MenuWorldRebuild();
+                Save(Config);
+
+                return true;
+            }
+
+            // Detector depth cap (world only)
+            if (IsMyMatch(Item("depth_detector_cap"), message))
+            {
+                var item = Item("depth_detector_cap");
+                var parsed = ChatParsePositiveInt(item, message);
+                if (!parsed.Item1) return false;
+
+                Config.DetectorDepthCap = parsed.Item2;
                 WriteConfirmationToChat(item, parsed.Item2);
 
                 MenuWorldRebuild();

@@ -243,9 +243,12 @@ namespace ConfigurableOres
             if (isDepth)
             {
                 _detectorRanges = new TerminalLabel { Name = "" };
+                var cap = Slider("Depth cap with detector range (0 = off)", Help("depth_detector_cap"),
+                    0, 5000, 0, () => Config?.DetectorDepthCap, () => "World Depth DetectorCap");
+
                 return Page("World depth",
                     Category("World depth", "How deep ore deposits are placed on every planet, unless a planet or ore overrides it.",
-                        Tile(_detectorRanges)),
+                        Tile(_detectorRanges, cap)),
                     DepthCategory("Settings", () => Config?.Depth, scope));
             }
 
@@ -751,7 +754,12 @@ namespace ConfigurableOres
             float large, small;
             if (ranges != null && ranges.TryGetValue(MyCubeSize.Large, out large) &&
                 ranges.TryGetValue(MyCubeSize.Small, out small))
-                SetName(_detectorRanges, $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m");
+            {
+                var cap = Config?.DetectorDepthCap ?? 0;
+                SetName(_detectorRanges, cap > 0
+                    ? $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m. Ore is capped at {cap} m."
+                    : $"Longest ore detector range: large grid {large:0} m, small grid {small:0} m");
+            }
 
             var config = Config;
             if (config != null)

@@ -69,6 +69,10 @@ namespace ConfigurableOres
         // When false they see it read-only.
         public bool HideMenuFromNonAdmins;
 
+        // When max depth comes from ore detector range, never go deeper than this (meters).
+        // 0 means no cap. Protects against mods that give detectors very long ranges.
+        public int DetectorDepthCap;
+
         // OreAutoDepth
         /*public int WorldDepthMin;
         public int WorldDepthMax;

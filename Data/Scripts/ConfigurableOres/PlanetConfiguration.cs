@@ -129,7 +129,7 @@ namespace ConfigurableOres
             // if we are already configured, we probably shouldn't be here.
             if (GeneratedPlanetOreMappings.Count >= 1 || AssignedOres.Count >= 1) return;
 
-            if (Depth.UseDetector) Depth.Max = (int)Session.OreDetectorRanges[Config.Depth.DetectorSize];
+            if (Depth.UseDetector) Depth.Max = (int)Session.DepthRangeFromDetector(Config.Depth.DetectorSize);
 
             // If there are no ore slots (ex. Overvent) then don't continue.
             if (!planetOreMappings.Any()) return;
@@ -721,6 +721,10 @@ namespace ConfigurableOres
             if (Depth.UseDetector)
             {
                 depthRange = Depth.DetectorFactor * Session.OreDetectorRanges[Depth.DetectorSize];
+
+                // Never deeper than the world's cap, even with a detector factor above 1.
+                var cap = Session.Config.DetectorDepthCap;
+                if (cap > 0 && depthRange > cap - DEFAULT_ORE_DEPTH_MIN) depthRange = cap - DEFAULT_ORE_DEPTH_MIN;
             }
 
             //LogVar("depthRange", depthRange);
