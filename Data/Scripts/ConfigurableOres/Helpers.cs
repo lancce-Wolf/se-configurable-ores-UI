@@ -73,7 +73,8 @@ namespace ConfigurableOres
         
         public const string COMMAND_PREFIX = "/ore";
         public const string MENU_REGEX_PREFIX = "(?i)^";
-        public const string MENU_REGEX_SUFFIX = "\\s*";
+        // Whole words only, so "EarthLike" does not match "EarthLikeTutorial".
+        public const string MENU_REGEX_SUFFIX = "(?:\\s+|$)";
         public const float DEFAULT_OREMAP_DEPTH_START = 15f;
         public const float DEFAULT_OREMAP_DEPTH_SIZE = 1f;
         public const string DEFAULT_OREMAP_TARGETCOLOR = "#616c83";

@@ -782,6 +782,7 @@ namespace ConfigurableOres
         #region Session Logging
 
         public const string LOG_PREFIX_SESSION = "SESSION";
+        public const string LOG_PREFIX_MENU = "MENU";
         public const string LOG_INIT = "Init()";
         public const string LOG_INITIALIZE = "Initialize(¯\\_(ツ)_/¯)";
         public const string LOG_BEFORE_START = "BeforeStart()";

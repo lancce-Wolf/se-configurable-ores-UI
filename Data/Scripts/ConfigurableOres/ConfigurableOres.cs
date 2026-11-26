@@ -121,6 +121,10 @@ namespace ConfigurableOres
             Initialize();
             base.Init(sessionComponent);
 
+            // Rich HUD settings menu (players only). Does nothing unless Rich HUD Master is loaded.
+            // Rich HUD asks to be initialized from Init().
+            if (!MyAPIGateway.Utilities.IsDedicated) OreSettingsMenu.Init();
+
             LogEnd(LOG_INIT);
         }
 
@@ -143,12 +147,14 @@ namespace ConfigurableOres
                     MyAPIGateway.Utilities.MessageEnteredSender += ChatHandler;
                     WriteToChat(Format(CHAT_HELLO_COMMANDS_ENABLED, COMMAND_PREFIX));
                 }
-
-                // Settings menu; does nothing unless Rich HUD Master is loaded.
-                OreSettingsMenu.Init();
             }
 
             LogEnd(LOG_BEFORE_START);
+        }
+
+        public override void UpdateBeforeSimulation()
+        {
+            OreSettingsMenu.Update();
         }
 
         #endregion
