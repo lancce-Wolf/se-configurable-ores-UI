@@ -119,6 +119,10 @@ namespace ConfigurableOres
         {
             LogBegin(LOG_CREATE_PLANET_CONFIG);
 
+            // Config is otherwise only set by ReInit(), which new planets don't go through,
+            // so a fresh world crashed here with a NullReferenceException (upstream bug from #25).
+            Config = ConfigurableOres.Instance.Config;
+
             Depth = Config.Depth.Clone();
             Size = Config.Size.Clone();
 
