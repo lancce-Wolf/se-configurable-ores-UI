@@ -456,6 +456,9 @@ namespace ConfigurableOres
             AddMenu("mod_logging", "Logging", "<On/Off>: Enable or disable logging");
             AddHelp("mod_logging",
                 $"{Item("mod_logging")}: This setting enables or disables writing debug messages to the Space Engineers log file. This mod produces a lot of logging messages, so leave logging disabled unless you are troubleshooting.");
+            AddMenu("mod_hide_menu", "HideMenu", "<On/Off>: Hide the settings menu from non-admins");
+            AddHelp("mod_hide_menu",
+                $"{Item("mod_hide_menu")}: When enabled, players who aren't admins don't see the Configurable Ores page in the Rich HUD settings menu. When disabled (the default), they can open it but can't change anything.");
             AddMenu("mod_command_prefix", "CommandPrefix", "Set the command prefix (default \"/ore\")");
             AddHelp("mod_command_prefix",
                 $"{Item("mod_command_prefix")}: This setting can be any combination of letters and numbers which are accepted by Space Engineers chat system. It is recommended to leave this the default.");

@@ -65,6 +65,10 @@ namespace ConfigurableOres
         //public string CommandPrefix = "";
         public bool DisableChatCommands;
 
+        // Settings menu (Rich HUD). When true, players below Admin don't see the menu at all.
+        // When false they see it read-only.
+        public bool HideMenuFromNonAdmins;
+
         // OreAutoDepth
         /*public int WorldDepthMin;
         public int WorldDepthMax;

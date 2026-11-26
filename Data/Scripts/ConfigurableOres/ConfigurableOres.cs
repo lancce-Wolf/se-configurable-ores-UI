@@ -130,15 +130,22 @@ namespace ConfigurableOres
 
             WriteToChat(CHAT_HELLO);
 
-            // Don't start chat handler on DS
-            if (IsMultiplayerHost || IsSinglePlayer)
+            // Runtime settings changes go through the server (see OreNetwork).
+            OreNetwork.Register();
+
+            // Chat and the settings menu only exist where there is a player.
+            if (!IsDedicatedServer)
             {
                 // chat handler fuse
+                // Multiplayer clients forward commands to the server, which checks admin rights.
                 if (!Config.DisableChatCommands)
                 {
                     MyAPIGateway.Utilities.MessageEnteredSender += ChatHandler;
                     WriteToChat(Format(CHAT_HELLO_COMMANDS_ENABLED, COMMAND_PREFIX));
                 }
+
+                // Settings menu; does nothing unless Rich HUD Master is loaded.
+                OreSettingsMenu.Init();
             }
 
             LogEnd(LOG_BEFORE_START);
@@ -175,8 +182,11 @@ namespace ConfigurableOres
             if (IsDedicatedServer || IsMultiplayerHost || IsSinglePlayer)
             {
                 Save(Config);
-                MyAPIGateway.Utilities.MessageEnteredSender -= ChatHandler;
             }
+
+            MyAPIGateway.Utilities.MessageEnteredSender -= ChatHandler;
+            OreSettingsMenu.Close();
+            OreNetwork.Unregister();
 
             Instance = null;
             Config = null;
@@ -526,8 +536,18 @@ namespace ConfigurableOres
             
             if (!IsMyMatch(COMMAND_PREFIX, messageText)) return;
 
-            if (!MenuRoot(COMMAND_PREFIX, TrimMyMatch(COMMAND_PREFIX, messageText)))
-                WriteErrorToChat(Error("default"), messageText);
+            // Commands run on the server, which checks the sender is an admin and replies in chat.
+            sendToOthers = false;
+            OreNetwork.RunCommand(messageText, fromChat: true);
+        }
+
+        /// <summary>
+        /// Server only. Runs an /ore command through the chat menu. Output goes through
+        /// WriteToChat, which OreNetwork captures and sends back to the player.
+        /// </summary>
+        public bool RunMenuCommand(string commandText)
+        {
+            return MenuRoot(COMMAND_PREFIX, TrimMyMatch(COMMAND_PREFIX, commandText));
         }
 
         #endregion
@@ -767,6 +787,7 @@ namespace ConfigurableOres
                 menuText.AppendLine(MenuLine(breadcrumbs, "show"));
                 //menuText.AppendLine(Format(CHAT_MENU_HINT_COMMAND_PREFIX, breadcrumbs));
                 menuText.AppendLine(MenuLine(breadcrumbs, "mod_logging"));
+                menuText.AppendLine(MenuLine(breadcrumbs, "mod_hide_menu"));
                 menuText.AppendLine(MenuLine(breadcrumbs, "mod_disable_chat_commands"));
                 menuText.AppendLine(MenuLine(breadcrumbs, "reset"));
 
@@ -783,9 +804,11 @@ namespace ConfigurableOres
                 var settings = new Dictionary<string, string>
                 {
                     //{CHAT_MENU_ITEM_COMMAND_PREFIX, Config.CommandPrefix},
-                    { Item("mod_logging"), Config.Logging.ToString() }
+                    { Item("mod_logging"), Config.Logging.ToString() },
+                    { Item("mod_hide_menu"), Config.HideMenuFromNonAdmins.ToString() }
                 };
                 WriteToChat(DisplaySettings(breadcrumbs, settings));
+                return true;
             }
 
             // Reset
@@ -809,6 +832,20 @@ namespace ConfigurableOres
                 if (!parsed.Item1) return false;
 
                 LOGGING_ENABLED = Config.Logging = parsed.Item2;
+                WriteConfirmationToChat(item, parsed.Item2);
+
+                Save(Config);
+                return true;
+            }
+
+            // Hide settings menu from non-admins
+            if (IsMyMatch(Item("mod_hide_menu"), message))
+            {
+                var item = Item("mod_hide_menu");
+                var parsed = ChatParseBool(item, message);
+                if (!parsed.Item1) return false;
+
+                Config.HideMenuFromNonAdmins = parsed.Item2;
                 WriteConfirmationToChat(item, parsed.Item2);
 
                 Save(Config);
@@ -1774,7 +1811,7 @@ namespace ConfigurableOres
                 // Skip parsing rarity if nothing left to parse
                 if (message.Length > 0)
                 {
-                    if (!float.TryParse(message, out rarity))
+                    if (!TryParseFloat(message, out rarity))
                     {
                         WriteToChat(Format(CHAT_HELP_ORE_ADD_FAILED_WITH_RARITY, ore, planetName, message));
                     }
@@ -2463,7 +2500,7 @@ namespace ConfigurableOres
 
             float tmp;
 
-            if (!float.TryParse(message, out tmp))
+            if (!TryParseFloat(message, out tmp))
             {
                 WriteErrorToChat(Error("not_positive"), command);
                 return new MyTuple<bool, float>(false, 0);
