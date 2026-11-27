@@ -79,6 +79,11 @@ namespace ConfigurableOres
         private static int _inFlightDeadline;
         private static int _lastEditTick;
 
+        // Picking from an open dropdown can also "click" a control underneath it.
+        private static int _lastOrePickTick = -1000;
+        private const int CLICK_THROUGH_GUARD_TICKS = 20;
+        private static bool JustPickedOre() => _tick - _lastOrePickTick < CLICK_THROUGH_GUARD_TICKS;
+
         #endregion
 
         #region Selection state
@@ -266,16 +271,20 @@ namespace ConfigurableOres
             _planetDropdown.ControlChanged += (s, a) => OnPlanetPicked(_planetDropdown);
 
             _assignedOreList = new TerminalDropdown<string> { Name = "Ore to remove" };
+            _assignedOreList.ControlChanged += (s, a) => _lastOrePickTick = _tick;
 
             _removeOreButton = AdminButton("Remove ore", "Takes the chosen ore off this planet.", () =>
             {
+                if (JustPickedOre()) return;
                 var ore = _assignedOreList.Value?.AssocObject;
                 if (_selectedPlanet != null && ore != null) Send($"{_selectedPlanet} Del {ore}");
             });
 
             _addOreDropdown = new TerminalDropdown<string> { Name = "Ore to add" };
+            _addOreDropdown.ControlChanged += (s, a) => _lastOrePickTick = _tick;
             _addOreButton = AdminButton("Add ore", "Adds the chosen ore to this planet with the planet's average rarity.", () =>
             {
+                if (JustPickedOre()) return;
                 var ore = _addOreDropdown.Value?.AssocObject;
                 if (_selectedPlanet != null && ore != null) Send($"{_selectedPlanet} Add {ore}");
             });
@@ -288,8 +297,10 @@ namespace ConfigurableOres
                 _planetCategory = Category("Planet", "Pick a planet to edit.",
                     Tile(_planetDropdown)),
                 Category("Ores", "Ores that can spawn on this planet.",
-                    Tile(_assignedOreList, _removeOreButton),
-                    Tile(_addOreDropdown, _addOreButton)),
+                    // Buttons go above their dropdowns: an open list drops down over whatever
+                    // is below it, and Rich HUD passes the click through to that control.
+                    Tile(_removeOreButton, _assignedOreList),
+                    Tile(_addOreButton, _addOreDropdown)),
                 DepthCategory("Planet depth", () => SelectedPlanetConfig?.Depth, scope),
                 SizeCategory("Planet size", () => SelectedPlanetConfig?.Size, scope));
         }
@@ -791,7 +802,12 @@ namespace ConfigurableOres
                 foreach (var item in items) list.Add(item, item);
             }
 
-            if (select != null && items.Contains(select)) list.SetSelection(select);
+            // Only touch the selection when it actually changes, so the periodic refresh
+            // doesn't look like the player picking something (see JustPickedOre).
+            if (select != null && items.Contains(select))
+            {
+                if (list.Selection == null || list.Selection.AssocObject != select) list.SetSelection(select);
+            }
             else if (items.Count > 0 && list.Selection == null) list.SetSelection(0);
         }
 
