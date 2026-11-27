@@ -25,6 +25,7 @@ using RichHudFramework.Client;
 using RichHudFramework.UI;
 using RichHudFramework.UI.Client;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using static ConfigurableOres.Helpers;
 using static ConfigurableOres.MenuStrings;
@@ -91,6 +92,12 @@ namespace ConfigurableOres
         #region Controls
 
         private static readonly List<TerminalSlider> Sliders = new List<TerminalSlider>();
+
+        // Number boxes and their "what to show" functions. Rich HUD only polls
+        // CustomValueGetter now and then, so these are also set directly on refresh;
+        // otherwise a box shows its default "NewTextField" for a moment.
+        private static readonly List<MyTuple<TerminalTextField, Func<string>>> NumberBoxes =
+            new List<MyTuple<TerminalTextField, Func<string>>>();
         private static readonly Dictionary<TerminalSlider, int> SliderDecimals = new Dictionary<TerminalSlider, int>();
 
         // Status text lives in category subheaders. Both those and control names show one line
@@ -167,6 +174,7 @@ namespace ConfigurableOres
             _inFlightCommands = 0;
             Sliders.Clear();
             SliderDecimals.Clear();
+            NumberBoxes.Clear();
             AdminOnly.Clear();
         }
 
@@ -478,13 +486,17 @@ namespace ConfigurableOres
             if (!string.IsNullOrEmpty(tooltip)) box.ToolTip = tooltip;
             box.CharFilterFunc = char.IsDigit;
 
-            box.CustomValueGetter = () =>
+            Func<string> display = () =>
             {
                 object shown;
                 if (TryGetUnsent(key, out shown)) return (string)shown;
                 var value = getValue();
                 return value == null ? "" : Math.Round(value.Value).ToString("0", CultureInfo.InvariantCulture);
             };
+
+            box.CustomValueGetter = display;
+            SetBoxText(box, display());
+            NumberBoxes.Add(new MyTuple<TerminalTextField, Func<string>>(box, display));
 
             box.ControlChanged += (s, a) =>
             {
@@ -821,8 +833,22 @@ namespace ConfigurableOres
                 ? "Pick a planet to edit."
                 : $"{planet.OreSlotCount} ore slots, {planet.GetAssignedOres().Distinct().Count()} ores assigned.");
 
+            foreach (var entry in NumberBoxes)
+                SetBoxText(entry.Item1, entry.Item2());
+
             foreach (var slider in Sliders)
                 slider.ValueText = FormatNumber(slider.Value, SliderDecimals[slider]);
+        }
+
+        private static void SetBoxText(TerminalTextField box, string text)
+        {
+            if (box.Value == text) return;
+
+            // Not a player edit, so the change handler must ignore it.
+            var wasRefreshing = _refreshing;
+            _refreshing = true;
+            try { box.Value = text; }
+            finally { _refreshing = wasRefreshing; }
         }
 
         private static void SetSubheader(ControlCategory category, string text)
