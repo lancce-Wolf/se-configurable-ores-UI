@@ -48,6 +48,9 @@ namespace ConfigurableOres
         /// <summary>Ticks to wait after the last slider movement before sending (60 ticks = 1 s).</summary>
         private const int SEND_DELAY_TICKS = 30;
 
+        /// <summary>Ticks to wait after the last keystroke in a number box (90 ticks = 1.5 s).</summary>
+        private const int TYPING_DELAY_TICKS = 90;
+
         /// <summary>Ticks to keep showing sent values while waiting for the server's snapshot.</summary>
         private const int IN_FLIGHT_TIMEOUT_TICKS = 180;
 
@@ -62,7 +65,8 @@ namespace ConfigurableOres
         {
             public string Key;
             public object Value;
-            public string Command;
+            public string Command; // null: just keep showing Value, send nothing
+            public int Delay;
         }
 
         // Edits waiting for the player to stop dragging, in the order they were made.
@@ -181,7 +185,7 @@ namespace ConfigurableOres
             }
 
             // Send edits once the player has stopped moving sliders for a moment.
-            if (Pending.Count > 0 && _tick - _lastEditTick >= SEND_DELAY_TICKS)
+            if (Pending.Count > 0 && _tick - _lastEditTick >= Pending.Max(e => e.Delay))
                 FlushPending();
 
             if (_inFlightCommands == 0 && InFlight.Count > 0 && _tick >= _inFlightDeadline)
@@ -379,8 +383,8 @@ namespace ConfigurableOres
         {
             Func<string, Func<string>> cmd = item => () => scope() == null ? null : $"{scope()} Depth {item}";
 
-            var min = Slider("Min depth", Hint("depth_min"), 0, 500, 0, () => settings()?.Min, cmd("Min"));
-            var max = Slider("Max depth", Hint("depth_max"), 1, 2000, 0, () => settings()?.Max, cmd("Max"));
+            var min = NumberBox("Min depth (m)", Hint("depth_min"), () => settings()?.Min, cmd("Min"));
+            var max = NumberBox("Max depth (m)", Hint("depth_max"), () => settings()?.Max, cmd("Max"));
             var useDetector = OnOff("Use detector range", Help("depth_use_detector"),
                 () => settings()?.UseDetector, cmd("UseDetector"));
             var progressive = OnOff("Progressive", Help("depth_use_progressive"),
@@ -403,8 +407,8 @@ namespace ConfigurableOres
         {
             Func<string, Func<string>> cmd = item => () => scope() == null ? null : $"{scope()} Size {item}";
 
-            var min = Slider("Min size", Hint("size_min"), 1, 100, 0, () => settings()?.Min, cmd("Min"));
-            var max = Slider("Max size", Hint("size_max"), 1, 200, 0, () => settings()?.Max, cmd("Max"));
+            var min = NumberBox("Min size (m)", Hint("size_min"), () => settings()?.Min, cmd("Min"));
+            var max = NumberBox("Max size (m)", Hint("size_max"), () => settings()?.Max, cmd("Max"));
             var factor = Slider("Factor", Help("size_factor"), 0.01f, 1f, 2, () => settings()?.Factor, cmd("Factor"));
             var fuzz = Slider("Fuzz", Help("size_fuzz"), 0.01f, 2f, 2, () => settings()?.Fuzz, cmd("Fuzz"));
 
@@ -458,6 +462,54 @@ namespace ConfigurableOres
             Sliders.Add(slider);
             SliderDecimals[slider] = decimals;
             return slider;
+        }
+
+        /// <summary>
+        /// A typed whole-number box (meters) bound to a setting. The value is sent once the
+        /// player stops typing; until then the box keeps showing what they typed.
+        /// </summary>
+        private static TerminalTextField NumberBox(string name, string tooltip, Func<float?> getValue,
+            Func<string> command)
+        {
+            var key = "number" + _keyCounter++;
+            var box = new TerminalTextField { Name = name };
+            if (!string.IsNullOrEmpty(tooltip)) box.ToolTip = tooltip;
+            box.CharFilterFunc = char.IsDigit;
+
+            box.CustomValueGetter = () =>
+            {
+                object shown;
+                if (TryGetUnsent(key, out shown)) return (string)shown;
+                var value = getValue();
+                return value == null ? "" : Math.Round(value.Value).ToString("0", CultureInfo.InvariantCulture);
+            };
+
+            box.ControlChanged += (s, a) =>
+            {
+                if (_refreshing || !OreNetwork.CanEdit) return;
+
+                var text = box.Value ?? "";
+                object shown;
+                if (TryGetUnsent(key, out shown) && (string)shown == text) return;
+
+                var current = getValue();
+                var cmd = command();
+                if (current == null || cmd == null) return;
+
+                int typed;
+                var savedText = Math.Round(current.Value).ToString("0", CultureInfo.InvariantCulture);
+                if (text == savedText && !TryGetUnsent(key, out shown)) return;
+
+                // Keep showing what's typed (even an empty box) until the player pauses.
+                var send = int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out typed)
+                           && text != savedText
+                    ? $"{cmd} {typed}"
+                    : null;
+
+                Queue(key, text, send, TYPING_DELAY_TICKS);
+            };
+
+            return box;
         }
 
         private static TerminalOnOffButton OnOff(string name, string tooltip, Func<bool?> getValue, Func<string> command)
@@ -560,10 +612,10 @@ namespace ConfigurableOres
 
         #region Sending edits
 
-        private static void Queue(string key, object value, string command)
+        private static void Queue(string key, object value, string command, int delay = SEND_DELAY_TICKS)
         {
             Pending.RemoveAll(e => e.Key == key);
-            Pending.Add(new Edit { Key = key, Value = value, Command = command });
+            Pending.Add(new Edit { Key = key, Value = value, Command = command, Delay = delay });
             _lastEditTick = _tick;
         }
 
@@ -571,6 +623,9 @@ namespace ConfigurableOres
         {
             foreach (var edit in Pending)
             {
+                // Nothing to send (empty box or unchanged value): let the control show the saved value again.
+                if (edit.Command == null) continue;
+
                 InFlight[edit.Key] = edit.Value;
                 Send(edit.Command);
             }
