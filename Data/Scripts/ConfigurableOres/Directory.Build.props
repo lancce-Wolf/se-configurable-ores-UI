@@ -1,0 +1,10 @@
+<Project>
+    <!--
+        Keep build output out of Data/Scripts. Space Engineers compiles every .cs file under
+        Data/Scripts itself, including the generated files in obj/, which would break loading.
+    -->
+    <PropertyGroup>
+        <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\..\.build\obj\</BaseIntermediateOutputPath>
+        <BaseOutputPath>$(MSBuildThisFileDirectory)..\..\..\.build\bin\</BaseOutputPath>
+    </PropertyGroup>
+</Project>

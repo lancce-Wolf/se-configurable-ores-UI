@@ -65,6 +65,10 @@ namespace ConfigurableOres
         //public string CommandPrefix = "";
         public bool DisableChatCommands;
 
+        // Settings menu (Rich HUD). When true, players below Admin don't see the menu at all.
+        // When false they see it read-only.
+        public bool HideMenuFromNonAdmins;
+
         // OreAutoDepth
         /*public int WorldDepthMin;
         public int WorldDepthMax;
@@ -518,31 +522,29 @@ namespace ConfigurableOres
                 return;
             }
 
-            Min = Parent.Min;
-            Max = Parent.Max;
-            UseProgressive = Parent.UseProgressive;
-            UseDetector = Parent.UseDetector;
-            Curve = Parent.Curve;
-            Fuzz = Parent.Fuzz;
-            DetectorSize = Parent.DetectorSize;
-            DetectorFactor = Parent.DetectorFactor;
-            //UseCustomDepth = Parent.UseCustomDepth;
-            //CustomDepth = Parent.CustomDepth;
+            // Go through the setters so the reset reaches every child too (World -> planets -> ores).
+            SetMin(Parent.Min);
+            SetMax(Parent.Max);
+            SetUseProgressive(Parent.UseProgressive);
+            SetUseDetector(Parent.UseDetector);
+            SetCurve(Parent.Curve);
+            SetFuzz(Parent.Fuzz);
+            SetDetectorSize(Parent.DetectorSize);
+            SetDetectorFactor(Parent.DetectorFactor);
         }
 
         public void ResetToDefaults()
         {
-            Min = DEFAULT_ORE_DEPTH_MIN;
-            Max = DEFAULT_ORE_DEPTH_MAX;
-            UseProgressive = DEFAULT_ORE_AUTO_DEPTH_PROGRESSIVE;
-            UseDetector = DEFAULT_ORE_USE_DETECTOR_STATE;
-            Curve = DEFAULT_ORE_AUTO_DEPTH_CURVE_EXPONENT;
-            Fuzz = DEFAULT_ORE_AUTO_DEPTH_FUZZ;
-            DetectorSize = DEFAULT_ORE_USE_DETECTOR_CUBESIZE;
-            DetectorFactor = DEFAULT_ORE_USE_DETECTOR_FACTOR;
-            //UseCustomDepth = DEFAULT_ORE_CUSTOM_DEPTH_STATE;
-            //CustomDepth = DEFAULT_ORE_CUSTOM_DEPTH;
+            SetMin(DEFAULT_ORE_DEPTH_MIN);
+            SetMax(DEFAULT_ORE_DEPTH_MAX);
+            SetUseProgressive(DEFAULT_ORE_AUTO_DEPTH_PROGRESSIVE);
+            SetUseDetector(DEFAULT_ORE_USE_DETECTOR_STATE);
+            SetCurve(DEFAULT_ORE_AUTO_DEPTH_CURVE_EXPONENT);
+            SetFuzz(DEFAULT_ORE_AUTO_DEPTH_FUZZ);
+            SetDetectorSize(DEFAULT_ORE_USE_DETECTOR_CUBESIZE);
+            SetDetectorFactor(DEFAULT_ORE_USE_DETECTOR_FACTOR);
         }
+
 
         public void SetMin(float min)
         {
@@ -558,9 +560,7 @@ namespace ConfigurableOres
 
         public void SetUseProgressive(bool useProgressive)
         {
-            Log($"in SetUseProgressive({useProgressive})");
             UseProgressive = useProgressive;
-            Log($"Children = {Children.Count}");
             Children.ForEach(c => c.SetUseProgressive(useProgressive));
         }
 
@@ -704,22 +704,19 @@ namespace ConfigurableOres
                 return;
             }
 
-            Min = Parent.Min;
-            Max = Parent.Max;
-            Factor = Parent.Factor;
-            Fuzz = Parent.Fuzz;
-            //UseCustomSize = Parent.UseCustomSize;
-            //CustomSize = Parent.CustomSize;
+            // Go through the setters so the reset reaches every child too (World -> planets -> ores).
+            SetMin(Parent.Min);
+            SetMax(Parent.Max);
+            SetFactor(Parent.Factor);
+            SetFuzz(Parent.Fuzz);
         }
 
         public void ResetToDefaults()
         {
-            Min = DEFAULT_ORE_SIZE_MIN;
-            Max = DEFAULT_ORE_SIZE_MAX;
-            Factor = DEFAULT_ORE_AUTO_SIZE_FACTOR;
-            Fuzz = DEFAULT_ORE_AUTO_SIZE_FUZZ;
-            //UseCustomSize = DEFAULT_ORE_CUSTOM_SIZE_STATE;
-            //CustomSize = DEFAULT_ORE_CUSTOM_SIZE;
+            SetMin(DEFAULT_ORE_SIZE_MIN);
+            SetMax(DEFAULT_ORE_SIZE_MAX);
+            SetFactor(DEFAULT_ORE_AUTO_SIZE_FACTOR);
+            SetFuzz(DEFAULT_ORE_AUTO_SIZE_FUZZ);
         }
 
         public void SetMin(float min)

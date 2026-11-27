@@ -73,7 +73,8 @@ namespace ConfigurableOres
         
         public const string COMMAND_PREFIX = "/ore";
         public const string MENU_REGEX_PREFIX = "(?i)^";
-        public const string MENU_REGEX_SUFFIX = "\\s*";
+        // Whole words only, so "EarthLike" does not match "EarthLikeTutorial".
+        public const string MENU_REGEX_SUFFIX = "(?:\\s+|$)";
         public const float DEFAULT_OREMAP_DEPTH_START = 15f;
         public const float DEFAULT_OREMAP_DEPTH_SIZE = 1f;
         public const string DEFAULT_OREMAP_TARGETCOLOR = "#616c83";
@@ -263,6 +264,16 @@ namespace ConfigurableOres
                 select voxelMaterial.Value).ToList();
         }
 
+        /// <summary>
+        /// Parses a float written either with a "." decimal point (what the settings menu sends)
+        /// or in the server's own culture (what players may type in chat).
+        /// </summary>
+        public static bool TryParseFloat(string text, out float value)
+        {
+            return float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+                   || float.TryParse(text, out value);
+        }
+
         public static bool StringContains(string source, string target)
         {
             return source.IndexOf(target, StringComparison.CurrentCultureIgnoreCase) > -1;
@@ -395,8 +406,21 @@ namespace ConfigurableOres
             WriteToChat(String.Format(Result(result), key, value.ToString()));
         }
 
+        /// <summary>
+        /// When set, chat output is collected here instead of being sent to chat.
+        /// The server uses this to send command results back to the player who ran them
+        /// (from chat or from the settings menu). See OreNetwork.
+        /// </summary>
+        public static StringBuilder ChatCapture;
+
         public static void WriteToChat(string message, string flag = null)
         {
+            if (ChatCapture != null)
+            {
+                ChatCapture.AppendLine(string.Format(CHAT_TEMPLATE_MESSAGE, flag, message));
+                return;
+            }
+
             MyVisualScriptLogicProvider.SendChatMessageColored(
                 string.Format(CHAT_TEMPLATE_MESSAGE, flag, message),
                 author: MOD_CHAT_AUTHOR,

@@ -456,22 +456,27 @@ namespace ConfigurableOres
             AddMenu("mod_logging", "Logging", "<On/Off>: Enable or disable logging");
             AddHelp("mod_logging",
                 $"{Item("mod_logging")}: This setting enables or disables writing debug messages to the Space Engineers log file. This mod produces a lot of logging messages, so leave logging disabled unless you are troubleshooting.");
+            AddMenu("mod_hide_menu", "HideMenu", "<On/Off>: Hide the settings menu from non-admins");
+            AddHelp("mod_hide_menu",
+                $"{Item("mod_hide_menu")}: When enabled, players who aren't admins don't see the Configurable Ores page in the Rich HUD settings menu. When disabled (the default), they can open it but can't change anything.");
             AddMenu("mod_command_prefix", "CommandPrefix", "Set the command prefix (default \"/ore\")");
             AddHelp("mod_command_prefix",
                 $"{Item("mod_command_prefix")}: This setting can be any combination of letters and numbers which are accepted by Space Engineers chat system. It is recommended to leave this the default.");
             AddMenu("mod_disable_chat_commands", "DisableChatCommands",
-                "Disable chat commands to prevent changes. You must edit the config file to enable them again.");
+                "Disable chat commands to prevent changes. Re-enable them from the settings menu or the config file.");
             AddMenu("mod_disable_chat_commands_confirm", "Confirm DisableChatCommands",
                 "Confirm disabling chat commands");
+            AddMenu("mod_enable_chat_commands", "EnableChatCommands",
+                "Turn chat commands back on (only from the settings menu, since chat is off)");
             AddHelp("mod_disable_chat_commands",
-                $"{Item("mod_disable_chat_commands")}: This command entirely disables the chat UI and requires a change to the mod's config file to undo. This is useful when you are finished making changes to your world and want to keep yourself from cheating or prevent shenanigans in multiplayer or dedicated server");
+                $"{Item("mod_disable_chat_commands")}: This command entirely disables the chat UI. Admins can turn it back on from the Rich HUD settings menu (Mod page), or by editing the mod's config file. This is useful when you are finished making changes to your world and want to keep yourself from cheating or prevent shenanigans in multiplayer or dedicated server");
             AddWarning("mod_disable_chat_commands",
                 DOUBLE_NEWLINE +
-                $"WARNING: Disabling chat commands cannot be undone except by directly editing the config file while the game or server is shut down. To really disable chat commands you must use \"{Item("mod_disable_chat_commands_confirm")}\"" +
+                $"WARNING: Once disabled, chat commands can only be turned back on from the Rich HUD settings menu (Mod page) or by editing the config file while the game or server is shut down. To really disable chat commands you must use \"{Item("mod_disable_chat_commands_confirm")}\"" +
                 DOUBLE_NEWLINE);
             AddWarning("mod_chat_commands_are_disabled",
                 DOUBLE_NEWLINE +
-                "***** Chat command system is now disabled. To re-enable it, you must edit the mod config file in the storage directory of this world save. For more information, please read the guide. *****" +
+                "***** Chat command system is now disabled. To re-enable it, use the Mod page of the Rich HUD settings menu, or edit the mod config file in the storage directory of this world save. For more information, please read the guide. *****" +
                 DOUBLE_NEWLINE);
             AddHelp("mod",
                 Help("mod_summary")
@@ -779,6 +784,7 @@ namespace ConfigurableOres
         #region Session Logging
 
         public const string LOG_PREFIX_SESSION = "SESSION";
+        public const string LOG_PREFIX_MENU = "MENU";
         public const string LOG_INIT = "Init()";
         public const string LOG_INITIALIZE = "Initialize(¯\\_(ツ)_/¯)";
         public const string LOG_BEFORE_START = "BeforeStart()";

@@ -2,68 +2,79 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <!-- The game compiles scripts without implicit usings; enabling them here makes Task ambiguous in Rich HUD code. -->
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
         <LangVersion>6</LangVersion>
+    </PropertyGroup>
+
+    <!--
+        Path to Space Engineers' Bin64 folder. Override on the command line or in a
+        Directory.Build.props, e.g. dotnet build -p:SEBin64="C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64"
+    -->
+    <PropertyGroup>
+        <SEBin64 Condition="'$(SEBin64)' == '' And Exists('C:\_Steam 4TB M2\steamapps\common\SpaceEngineers\Bin64')">C:\_Steam 4TB M2\steamapps\common\SpaceEngineers\Bin64</SEBin64>
+        <SEBin64 Condition="'$(SEBin64)' == '' And Exists('C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64')">C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64</SEBin64>
+        <SEBin64 Condition="'$(SEBin64)' == ''">..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64</SEBin64>
     </PropertyGroup>
 
     <ItemGroup>
         <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\netstandard.dll</HintPath>
+            <HintPath>$(SEBin64)\netstandard.dll</HintPath>
         </Reference>
         <Reference Include="ProtoBuf.Net.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.Core.dll</HintPath>
+            <HintPath>$(SEBin64)\ProtoBuf.Net.Core.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Sandbox.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
+            <HintPath>$(SEBin64)\Sandbox.Common.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Sandbox.Game, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
+            <HintPath>$(SEBin64)\Sandbox.Game.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Sandbox.Graphics, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
+            <HintPath>$(SEBin64)\Sandbox.Graphics.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="SpaceEngineers.Game, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.Game.dll</HintPath>
+            <HintPath>$(SEBin64)\SpaceEngineers.Game.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="SpaceEngineers.ObjectBuilders, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.dll</HintPath>
+            <HintPath>$(SEBin64)\SpaceEngineers.ObjectBuilders.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\System.Collections.Immutable.dll</HintPath>
+            <HintPath>$(SEBin64)\System.Collections.Immutable.dll</HintPath>
         </Reference>
         <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Game, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Game.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Game.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Input, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Input.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Input.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Library, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Library.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Math, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Math.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Render, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Render.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Render.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="VRage.Render11, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\..\..\..\..\.steam\debian-installation\steamapps\common\SpaceEngineers\Bin64\VRage.Render11.dll</HintPath>
+            <HintPath>$(SEBin64)\VRage.Render11.dll</HintPath>
             <Private>False</Private>
         </Reference>
     </ItemGroup>
@@ -79,5 +90,32 @@
     <ItemGroup>
       <None Remove="obj\**" />
     </ItemGroup>
+
+    <!--
+        After each build on Windows, copy the mod into the game's Mods folder so it can be
+        loaded in game as a local mod. The game compiles the .cs files itself; the DLL Rider
+        builds is only a compile check. Override the target with -p:ModDeployDir=...
+        or turn it off with -p:ModDeployDir=none.
+    -->
+    <PropertyGroup>
+        <ModRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\..\'))</ModRoot>
+        <ModDeployDir Condition="'$(ModDeployDir)' == '' And '$(OS)' == 'Windows_NT'">$(APPDATA)\SpaceEngineers\Mods\ConfigurableOresUI\</ModDeployDir>
+    </PropertyGroup>
+
+    <Target Name="DeployMod" AfterTargets="Build"
+            Condition="'$(ModDeployDir)' != '' And '$(ModDeployDir)' != 'none' And '$([System.IO.Path]::GetFullPath($(ModDeployDir)).TrimEnd(`\`))' != '$(ModRoot.TrimEnd(`\`))'">
+        <ItemGroup>
+            <ModScripts Include="$(MSBuildProjectDirectory)\**\*.cs"
+                        Exclude="$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
+            <ModRootFiles Include="$(ModRoot)metadata.mod;$(ModRoot)thumb.jpg;$(ModRoot)LICENSE" />
+        </ItemGroup>
+
+        <!-- Start clean so files deleted from the project don't linger in the game's copy. -->
+        <RemoveDir Directories="$(ModDeployDir)Data" />
+        <Copy SourceFiles="@(ModScripts)"
+              DestinationFiles="@(ModScripts->'$(ModDeployDir)Data\Scripts\ConfigurableOres\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(ModRootFiles)" DestinationFolder="$(ModDeployDir)" Condition="Exists('%(FullPath)')" />
+        <Message Importance="high" Text="Copied mod to $(ModDeployDir)" />
+    </Target>
 
 </Project>
