@@ -302,12 +302,12 @@ namespace ConfigurableOres
                 _selectedPlanet != null && _selectedOre != null ? $"{_selectedPlanet} {_selectedOre}" : null;
 
             _raritySlider = Slider("Rarity",
-                "How many of the planet's ore slots this ore gets. Higher means more common.",
+                "Higher number = rarer. Each ore gets planet slots / rarity raffle tickets for the planet's ore slots, so 1 is the most common.",
                 1, 10, 0, () => SelectedOre?.Rarity,
                 () => scope() == null ? null : scope() + " Rarity");
 
             return Page("Planet ores",
-                Category("Ore", "Pick a planet and one of its ores.",
+                Category("Ore", "Pick a planet and ore. Rarity: higher number = rarer.",
                     Tile(_orePagePlanetDropdown, _oreDropdown),
                     Tile(_raritySlider)),
                 DepthCategory("Ore depth", () => SelectedOre?.Depth, scope),
