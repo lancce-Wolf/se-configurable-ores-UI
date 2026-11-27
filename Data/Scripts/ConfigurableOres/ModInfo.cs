@@ -66,7 +66,7 @@ namespace ConfigurableOres
             revision: BUILD_NUMBER
         );
 
-        public const string MOD_NAME = "Configurable Ores (Rich HUD UI)";
+        public const string MOD_NAME = "Configurable Ores"; // shown in the Rich HUD mod list, which cuts off around 20 characters
         public const uint MOD_ID = 3846974172; // this fork's Workshop item (original: 2973891097)
         public const ushort CHANNEL_ID = 51723;
         public const string MOD_CHAT_AUTHOR = "ORE";

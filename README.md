@@ -5,7 +5,7 @@ This is a fork of [Configurable Ores](https://steamcommunity.com/sharedfiles/fil
 
 ## This fork: in-game settings menu
 
-This fork adds a settings menu built on [Rich HUD Master](https://steamcommunity.com/workshop/filedetails/?id=1965654081). Open the Rich HUD settings menu in game and pick **Configurable Ores (Rich HUD UI)**.
+This fork adds a settings menu built on [Rich HUD Master](https://steamcommunity.com/workshop/filedetails/?id=1965654081). Open the Rich HUD settings menu in game and pick **Configurable Ores**.
 
 ### What's in the menu
 
