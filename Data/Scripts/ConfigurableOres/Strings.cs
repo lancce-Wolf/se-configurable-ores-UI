@@ -216,7 +216,7 @@ namespace ConfigurableOres
             #region Warnings
 
             AddWarning("inheritance",
-                "WARNING: Settings are propagated from World level to Planet level to Ore level. If you make changes made at this level, it will also change the same settings for everything connected, in the order: World -> Planet -> Ore. For example, setting a minimum depth at the world level will set the same depth for all planets and all ores assigned to those planets. It is best to make changes at the world level before making more detailed changes on planets and assigned ores.");
+                "NOTE: Settings are propagated from World level to Planet level to Ore level, in the order: World -> Planet -> Ore. A change only reaches planets and ores that still had the same value as the level above; anything you customised keeps its own value. For example, changing the minimum depth at the world level changes it for every planet that still uses the world value, but not for a planet where you set your own minimum depth.");
             AddWarning("size_and_depth_system",
                 "NOTE: In Space Engineers, ore deposits have a horizontal shape, vertical start depth, and vertical stop depth. The horizontal shapes are determined entirely by planet model data which is inaccessible to mods. However, the ore deposit vertical start and stop depths may be changed by mods, and that's what this mod does.");
 

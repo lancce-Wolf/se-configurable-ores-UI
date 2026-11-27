@@ -522,81 +522,91 @@ namespace ConfigurableOres
                 return;
             }
 
-            Min = Parent.Min;
-            Max = Parent.Max;
-            UseProgressive = Parent.UseProgressive;
-            UseDetector = Parent.UseDetector;
-            Curve = Parent.Curve;
-            Fuzz = Parent.Fuzz;
-            DetectorSize = Parent.DetectorSize;
-            DetectorFactor = Parent.DetectorFactor;
-            //UseCustomDepth = Parent.UseCustomDepth;
-            //CustomDepth = Parent.CustomDepth;
+            // Go through the setters so children that follow us follow the reset too.
+            SetMin(Parent.Min);
+            SetMax(Parent.Max);
+            SetUseProgressive(Parent.UseProgressive);
+            SetUseDetector(Parent.UseDetector);
+            SetCurve(Parent.Curve);
+            SetFuzz(Parent.Fuzz);
+            SetDetectorSize(Parent.DetectorSize);
+            SetDetectorFactor(Parent.DetectorFactor);
         }
 
         public void ResetToDefaults()
         {
-            Min = DEFAULT_ORE_DEPTH_MIN;
-            Max = DEFAULT_ORE_DEPTH_MAX;
-            UseProgressive = DEFAULT_ORE_AUTO_DEPTH_PROGRESSIVE;
-            UseDetector = DEFAULT_ORE_USE_DETECTOR_STATE;
-            Curve = DEFAULT_ORE_AUTO_DEPTH_CURVE_EXPONENT;
-            Fuzz = DEFAULT_ORE_AUTO_DEPTH_FUZZ;
-            DetectorSize = DEFAULT_ORE_USE_DETECTOR_CUBESIZE;
-            DetectorFactor = DEFAULT_ORE_USE_DETECTOR_FACTOR;
-            //UseCustomDepth = DEFAULT_ORE_CUSTOM_DEPTH_STATE;
-            //CustomDepth = DEFAULT_ORE_CUSTOM_DEPTH;
+            SetMin(DEFAULT_ORE_DEPTH_MIN);
+            SetMax(DEFAULT_ORE_DEPTH_MAX);
+            SetUseProgressive(DEFAULT_ORE_AUTO_DEPTH_PROGRESSIVE);
+            SetUseDetector(DEFAULT_ORE_USE_DETECTOR_STATE);
+            SetCurve(DEFAULT_ORE_AUTO_DEPTH_CURVE_EXPONENT);
+            SetFuzz(DEFAULT_ORE_AUTO_DEPTH_FUZZ);
+            SetDetectorSize(DEFAULT_ORE_USE_DETECTOR_CUBESIZE);
+            SetDetectorFactor(DEFAULT_ORE_USE_DETECTOR_FACTOR);
         }
+
+        /*
+         * A change only flows down to children that still had the same value as us
+         * before the change. A planet (or ore) whose value was customised keeps it,
+         * so World settings no longer overwrite per-planet settings and planet settings
+         * no longer overwrite per-ore settings.
+         */
+        private static bool Same(float a, float b) => Math.Abs(a - b) < 0.001f;
 
         public void SetMin(float min)
         {
+            var old = Min;
             Min = min;
-            Children.ForEach(c => c.SetMin(min));
+            Children.ForEach(c => { if (Same(c.Min, old)) c.SetMin(min); });
         }
 
         public void SetMax(float max)
         {
+            var old = Max;
             Max = max;
-            Children.ForEach(c => c.SetMax(max));
+            Children.ForEach(c => { if (Same(c.Max, old)) c.SetMax(max); });
         }
 
         public void SetUseProgressive(bool useProgressive)
         {
-            Log($"in SetUseProgressive({useProgressive})");
+            var old = UseProgressive;
             UseProgressive = useProgressive;
-            Log($"Children = {Children.Count}");
-            Children.ForEach(c => c.SetUseProgressive(useProgressive));
+            Children.ForEach(c => { if (c.UseProgressive == old) c.SetUseProgressive(useProgressive); });
         }
 
         public void SetUseDetector(bool useDetector)
         {
+            var old = UseDetector;
             UseDetector = useDetector;
-            Children.ForEach(c => c.SetUseDetector(useDetector));
-            Children.ForEach(c => c.SetMax(Max));
+            Children.ForEach(c => { if (c.UseDetector == old) c.SetUseDetector(useDetector); });
         }
 
         public void SetCurve(float curve)
         {
+            var old = Curve;
             Curve = curve;
-            Children.ForEach(c => c.SetCurve(curve));
+            Children.ForEach(c => { if (Same(c.Curve, old)) c.SetCurve(curve); });
         }
 
         public void SetFuzz(float fuzz)
         {
+            var old = Fuzz;
             Fuzz = fuzz;
-            Children.ForEach(c => c.SetFuzz(fuzz));
+            Children.ForEach(c => { if (Same(c.Fuzz, old)) c.SetFuzz(fuzz); });
         }
 
         public void SetDetectorFactor(float detectorFactor)
         {
+            var old = DetectorFactor;
             DetectorFactor = detectorFactor;
-            Children.ForEach(c => c.SetDetectorFactor(detectorFactor));
+            Children.ForEach(c => { if (Same(c.DetectorFactor, old)) c.SetDetectorFactor(detectorFactor); });
         }
 
         public void SetDetectorSize(MyCubeSize detectorSize)
         {
+            var old = DetectorSize;
             DetectorSize = detectorSize;
-            Children.ForEach(c => c.SetDetectorSize(detectorSize));
+            Children.ForEach(c => { if (c.DetectorSize == old) c.SetDetectorSize(detectorSize); });
         }
 
         /*public void SetUseCustomDepth(bool useCustomDepth)
@@ -708,46 +718,50 @@ namespace ConfigurableOres
                 return;
             }
 
-            Min = Parent.Min;
-            Max = Parent.Max;
-            Factor = Parent.Factor;
-            Fuzz = Parent.Fuzz;
-            //UseCustomSize = Parent.UseCustomSize;
-            //CustomSize = Parent.CustomSize;
+            // Go through the setters so children that follow us follow the reset too.
+            SetMin(Parent.Min);
+            SetMax(Parent.Max);
+            SetFactor(Parent.Factor);
+            SetFuzz(Parent.Fuzz);
         }
 
         public void ResetToDefaults()
         {
-            Min = DEFAULT_ORE_SIZE_MIN;
-            Max = DEFAULT_ORE_SIZE_MAX;
-            Factor = DEFAULT_ORE_AUTO_SIZE_FACTOR;
-            Fuzz = DEFAULT_ORE_AUTO_SIZE_FUZZ;
-            //UseCustomSize = DEFAULT_ORE_CUSTOM_SIZE_STATE;
-            //CustomSize = DEFAULT_ORE_CUSTOM_SIZE;
+            SetMin(DEFAULT_ORE_SIZE_MIN);
+            SetMax(DEFAULT_ORE_SIZE_MAX);
+            SetFactor(DEFAULT_ORE_AUTO_SIZE_FACTOR);
+            SetFuzz(DEFAULT_ORE_AUTO_SIZE_FUZZ);
         }
+
+        // Same rule as depth: customised children keep their own values.
+        private static bool Same(float a, float b) => Math.Abs(a - b) < 0.001f;
 
         public void SetMin(float min)
         {
+            var old = Min;
             Min = min;
-            Children.ForEach(c => c.SetMin(min));
+            Children.ForEach(c => { if (Same(c.Min, old)) c.SetMin(min); });
         }
 
         public void SetMax(float max)
         {
+            var old = Max;
             Max = max;
-            Children.ForEach(c => c.SetMax(max));
+            Children.ForEach(c => { if (Same(c.Max, old)) c.SetMax(max); });
         }
 
         public void SetFactor(float factor)
         {
+            var old = Factor;
             Factor = factor;
-            Children.ForEach(c => c.SetFactor(factor));
+            Children.ForEach(c => { if (Same(c.Factor, old)) c.SetFactor(factor); });
         }
 
         public void SetFuzz(float fuzz)
         {
+            var old = Fuzz;
             Fuzz = fuzz;
-            Children.ForEach(c => c.SetFuzz(fuzz));
+            Children.ForEach(c => { if (Same(c.Fuzz, old)) c.SetFuzz(fuzz); });
         }
 
         /*public void SetUseCustomSize(bool useCustomSize)
