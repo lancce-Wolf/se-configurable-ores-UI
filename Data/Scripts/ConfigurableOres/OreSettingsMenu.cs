@@ -343,9 +343,17 @@ namespace ConfigurableOres
                 () => Config?.HideMenuFromNonAdmins, () => "World Mod HideMenu");
 
             _disableChatButton = AdminButton("Disable chat cmds",
-                "Turns off /ore chat commands for everyone. This menu keeps working. Press twice to confirm.",
+                "Turns /ore chat commands off or back on for everyone. This menu keeps working. Turning off needs two presses.",
                 () =>
                 {
+                    // Turning chat back on needs no confirmation.
+                    if (Config != null && Config.DisableChatCommands)
+                    {
+                        _disableChatArmed = false;
+                        Send("World Mod EnableChatCommands");
+                        return;
+                    }
+
                     if (!_disableChatArmed)
                     {
                         _disableChatArmed = true;
@@ -354,7 +362,6 @@ namespace ConfigurableOres
                     }
 
                     _disableChatArmed = false;
-                    _disableChatButton.Name = "Disable chat cmds";
                     Send("World Mod Confirm DisableChatCommands");
                 });
 
@@ -839,9 +846,11 @@ namespace ConfigurableOres
             if (config != null)
             {
                 SetSubheader(_modCategory, config.DisableChatCommands
-                    ? "Chat commands off (re-enable in ConfigurableOres.xml)."
+                    ? "Chat commands off. Press Enable chat cmds to turn them back on."
                     : $"Chat commands ({COMMAND_PREFIX}) on.");
-                _disableChatButton.Enabled = OreNetwork.CanEdit && !config.DisableChatCommands;
+                var name = config.DisableChatCommands ? "Enable chat cmds"
+                    : _disableChatArmed ? "Press to confirm" : "Disable chat cmds";
+                if (_disableChatButton.Name != name) _disableChatButton.Name = name;
             }
 
             var planet = SelectedPlanetConfig;

@@ -142,11 +142,11 @@ namespace ConfigurableOres
             {
                 // chat handler fuse
                 // Multiplayer clients forward commands to the server, which checks admin rights.
+                // Always listen: ChatHandler checks the flag itself, so turning chat commands
+                // back on from the menu works without reloading the world.
+                MyAPIGateway.Utilities.MessageEnteredSender += ChatHandler;
                 if (!Config.DisableChatCommands)
-                {
-                    MyAPIGateway.Utilities.MessageEnteredSender += ChatHandler;
                     WriteToChat(Format(CHAT_HELLO_COMMANDS_ENABLED, COMMAND_PREFIX));
-                }
             }
 
             LogEnd(LOG_BEFORE_START);
@@ -862,6 +862,18 @@ namespace ConfigurableOres
             if (IsMyMatch(Item("mod_disable_chat_commands"), message))
             {
                 WriteToChat(Warning("mod_disable_chat_commands"));
+                return true;
+            }
+
+            // Enable Chat Commands. Chat commands are blocked while disabled, so in practice
+            // this arrives from the settings menu (OreNetwork still checks for admin).
+            if (IsMyMatch(Item("mod_enable_chat_commands"), message))
+            {
+                var item = Item("mod_enable_chat_commands");
+                Config.DisableChatCommands = false;
+                WriteConfirmationToChat(item, true);
+
+                Save(Config);
                 return true;
             }
 
