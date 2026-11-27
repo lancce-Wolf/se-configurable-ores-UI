@@ -1,11 +1,11 @@
-# Configurable Ores
-This is a Space Engineers mod for managing planetary ores. Full information available at the Steam Workshop page: [Configurable Ores](https://steamcommunity.com/sharedfiles/filedetails/?id=2973891097)
+# Configurable Ores (Rich HUD UI)
+This is a fork of [Configurable Ores](https://steamcommunity.com/sharedfiles/filedetails/?id=2973891097), a Space Engineers mod for managing planetary ores, with an in-game settings menu. Workshop page for this fork: [Configurable Ores (Rich HUD UI)](https://steamcommunity.com/sharedfiles/filedetails/?id=3846974172)
 
 ![se-configurable-ores Steam Workshop thumbnail image](https://github.com/padthaitofuhot/se-configurable-ores/blob/b412c5fc39d2db669325a083f147048979a5b0da/thumb.jpg)
 
 ## This fork: in-game settings menu
 
-This fork adds a settings menu built on [Rich HUD Master](https://steamcommunity.com/workshop/filedetails/?id=1965654081). Open the Rich HUD settings menu in game and pick **Configurable Ores**.
+This fork adds a settings menu built on [Rich HUD Master](https://steamcommunity.com/workshop/filedetails/?id=1965654081). Open the Rich HUD settings menu in game and pick **Configurable Ores (Rich HUD UI)**.
 
 ### What's in the menu
 
