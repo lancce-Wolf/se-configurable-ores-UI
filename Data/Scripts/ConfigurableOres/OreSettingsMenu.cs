@@ -279,7 +279,9 @@ namespace ConfigurableOres
                 _planetCategory = Category("Planet", "Pick a planet to edit.",
                     Tile(_planetDropdown)),
                 Category("Ores", "Ores that can spawn on this planet.",
-                    Tile(_assignedOreList, _removeOreButton),
+                    Tile(_assignedOreList),
+                    // The list fills a whole tile; sharing it made the button overlap the list.
+                    Tile(_removeOreButton),
                     Tile(_addOreDropdown, _addOreButton)),
                 DepthCategory("Planet depth", () => SelectedPlanetConfig?.Depth, scope),
                 SizeCategory("Planet size", () => SelectedPlanetConfig?.Size, scope));
