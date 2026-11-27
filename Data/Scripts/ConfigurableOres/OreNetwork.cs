@@ -255,7 +255,12 @@ namespace ConfigurableOres
         {
             changed = false;
 
-            var result = new OreMessage { Type = OreMessageType.CommandResult, FromChat = fromChat };
+            var result = new OreMessage
+            {
+                Type = OreMessageType.CommandResult,
+                FromChat = fromChat,
+                RestartNeeded = _serverRestartNeeded
+            };
             var config = Mod?.Config;
 
             if (config == null)
@@ -300,8 +305,11 @@ namespace ConfigurableOres
             var after = Configuration.SerializeConfig(Mod.Config);
             changed = after != before;
             if (changed) _serverRestartNeeded = after != _loadedConfigXml;
+            Log(LOG_PREFIX_SESSION,
+                $"Command '{commandText}': ok={ok} changed={changed} restartNeeded={_serverRestartNeeded}");
 
             result.Success = ok;
+            result.RestartNeeded = _serverRestartNeeded;
             result.Text = output.ToString().TrimEnd();
             return result;
         }
@@ -386,6 +394,10 @@ namespace ConfigurableOres
 
         private static void DeliverResult(OreMessage msg)
         {
+            // The result carries the restart flag too, so the menu doesn't depend on the
+            // snapshot arriving first.
+            RestartNeeded = msg.RestartNeeded;
+
             if (msg.FromChat)
             {
                 if (!string.IsNullOrEmpty(msg.Text))

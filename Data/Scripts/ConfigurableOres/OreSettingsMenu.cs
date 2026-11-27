@@ -710,7 +710,8 @@ namespace ConfigurableOres
 
             if (success)
             {
-                MyAPIGateway.Utilities.ShowNotification($"{MOD_NAME}: {firstLine}", 3000, MyFontEnum.White);
+                var restart = OreNetwork.RestartNeeded ? " Restart the world to apply." : "";
+                MyAPIGateway.Utilities.ShowNotification($"{MOD_NAME}: {firstLine}{restart}", 3000, MyFontEnum.White);
             }
             else
             {
