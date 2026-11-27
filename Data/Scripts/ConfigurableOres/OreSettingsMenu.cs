@@ -111,7 +111,7 @@ namespace ConfigurableOres
 
         private static TerminalDropdown<string> _planetDropdown;
         private static TerminalDropdown<string> _orePagePlanetDropdown;
-        private static TerminalList<string> _assignedOreList;
+        private static TerminalDropdown<string> _assignedOreList;
         private static TerminalButton _removeOreButton;
         private static TerminalDropdown<string> _addOreDropdown;
         private static TerminalButton _addOreButton;
@@ -265,9 +265,9 @@ namespace ConfigurableOres
             _planetDropdown = new TerminalDropdown<string> { Name = "Planet" };
             _planetDropdown.ControlChanged += (s, a) => OnPlanetPicked(_planetDropdown);
 
-            _assignedOreList = new TerminalList<string> { Name = "Ores on planet" };
+            _assignedOreList = new TerminalDropdown<string> { Name = "Ore to remove" };
 
-            _removeOreButton = AdminButton("Remove ore", "Takes the ore selected above off this planet.", () =>
+            _removeOreButton = AdminButton("Remove ore", "Takes the chosen ore off this planet.", () =>
             {
                 var ore = _assignedOreList.Value?.AssocObject;
                 if (_selectedPlanet != null && ore != null) Send($"{_selectedPlanet} Del {ore}");
@@ -280,6 +280,7 @@ namespace ConfigurableOres
                 if (_selectedPlanet != null && ore != null) Send($"{_selectedPlanet} Add {ore}");
             });
             AdminOnly.Add(_addOreDropdown);
+            AdminOnly.Add(_assignedOreList); // non-admins still see the ores on the Planet ores page
 
             Func<string> scope = () => _selectedPlanet;
 
@@ -287,9 +288,7 @@ namespace ConfigurableOres
                 _planetCategory = Category("Planet", "Pick a planet to edit.",
                     Tile(_planetDropdown)),
                 Category("Ores", "Ores that can spawn on this planet.",
-                    Tile(_assignedOreList),
-                    // The list fills a whole tile; sharing it made the button overlap the list.
-                    Tile(_removeOreButton),
+                    Tile(_assignedOreList, _removeOreButton),
                     Tile(_addOreDropdown, _addOreButton)),
                 DepthCategory("Planet depth", () => SelectedPlanetConfig?.Depth, scope),
                 SizeCategory("Planet size", () => SelectedPlanetConfig?.Size, scope));
