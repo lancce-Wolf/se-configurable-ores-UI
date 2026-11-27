@@ -832,7 +832,7 @@ namespace ConfigurableOres
                 ranges.TryGetValue(MyCubeSize.Small, out small))
             {
                 SetSubheader(_worldDepthCategory,
-                    $"Customised planets keep their values. Detector range: large {large:0} m, small {small:0} m.");
+                    $"Overrides every planet and ore. Detector range: large {large:0} m, small {small:0} m.");
             }
 
             var config = Config;

@@ -522,7 +522,7 @@ namespace ConfigurableOres
                 return;
             }
 
-            // Go through the setters so children that follow us follow the reset too.
+            // Go through the setters so the reset reaches every child too (World -> planets -> ores).
             SetMin(Parent.Min);
             SetMax(Parent.Max);
             SetUseProgressive(Parent.UseProgressive);
@@ -545,68 +545,54 @@ namespace ConfigurableOres
             SetDetectorFactor(DEFAULT_ORE_USE_DETECTOR_FACTOR);
         }
 
-        /*
-         * A change only flows down to children that still had the same value as us
-         * before the change. A planet (or ore) whose value was customised keeps it,
-         * so World settings no longer overwrite per-planet settings and planet settings
-         * no longer overwrite per-ore settings.
-         */
-        private static bool Same(float a, float b) => Math.Abs(a - b) < 0.001f;
 
         public void SetMin(float min)
         {
-            var old = Min;
             Min = min;
-            Children.ForEach(c => { if (Same(c.Min, old)) c.SetMin(min); });
+            Children.ForEach(c => c.SetMin(min));
         }
 
         public void SetMax(float max)
         {
-            var old = Max;
             Max = max;
-            Children.ForEach(c => { if (Same(c.Max, old)) c.SetMax(max); });
+            Children.ForEach(c => c.SetMax(max));
         }
 
         public void SetUseProgressive(bool useProgressive)
         {
-            var old = UseProgressive;
             UseProgressive = useProgressive;
-            Children.ForEach(c => { if (c.UseProgressive == old) c.SetUseProgressive(useProgressive); });
+            Children.ForEach(c => c.SetUseProgressive(useProgressive));
         }
 
         public void SetUseDetector(bool useDetector)
         {
-            var old = UseDetector;
             UseDetector = useDetector;
-            Children.ForEach(c => { if (c.UseDetector == old) c.SetUseDetector(useDetector); });
+            Children.ForEach(c => c.SetUseDetector(useDetector));
+            Children.ForEach(c => c.SetMax(Max));
         }
 
         public void SetCurve(float curve)
         {
-            var old = Curve;
             Curve = curve;
-            Children.ForEach(c => { if (Same(c.Curve, old)) c.SetCurve(curve); });
+            Children.ForEach(c => c.SetCurve(curve));
         }
 
         public void SetFuzz(float fuzz)
         {
-            var old = Fuzz;
             Fuzz = fuzz;
-            Children.ForEach(c => { if (Same(c.Fuzz, old)) c.SetFuzz(fuzz); });
+            Children.ForEach(c => c.SetFuzz(fuzz));
         }
 
         public void SetDetectorFactor(float detectorFactor)
         {
-            var old = DetectorFactor;
             DetectorFactor = detectorFactor;
-            Children.ForEach(c => { if (Same(c.DetectorFactor, old)) c.SetDetectorFactor(detectorFactor); });
+            Children.ForEach(c => c.SetDetectorFactor(detectorFactor));
         }
 
         public void SetDetectorSize(MyCubeSize detectorSize)
         {
-            var old = DetectorSize;
             DetectorSize = detectorSize;
-            Children.ForEach(c => { if (c.DetectorSize == old) c.SetDetectorSize(detectorSize); });
+            Children.ForEach(c => c.SetDetectorSize(detectorSize));
         }
 
         /*public void SetUseCustomDepth(bool useCustomDepth)
@@ -718,7 +704,7 @@ namespace ConfigurableOres
                 return;
             }
 
-            // Go through the setters so children that follow us follow the reset too.
+            // Go through the setters so the reset reaches every child too (World -> planets -> ores).
             SetMin(Parent.Min);
             SetMax(Parent.Max);
             SetFactor(Parent.Factor);
@@ -733,35 +719,28 @@ namespace ConfigurableOres
             SetFuzz(DEFAULT_ORE_AUTO_SIZE_FUZZ);
         }
 
-        // Same rule as depth: customised children keep their own values.
-        private static bool Same(float a, float b) => Math.Abs(a - b) < 0.001f;
-
         public void SetMin(float min)
         {
-            var old = Min;
             Min = min;
-            Children.ForEach(c => { if (Same(c.Min, old)) c.SetMin(min); });
+            Children.ForEach(c => c.SetMin(min));
         }
 
         public void SetMax(float max)
         {
-            var old = Max;
             Max = max;
-            Children.ForEach(c => { if (Same(c.Max, old)) c.SetMax(max); });
+            Children.ForEach(c => c.SetMax(max));
         }
 
         public void SetFactor(float factor)
         {
-            var old = Factor;
             Factor = factor;
-            Children.ForEach(c => { if (Same(c.Factor, old)) c.SetFactor(factor); });
+            Children.ForEach(c => c.SetFactor(factor));
         }
 
         public void SetFuzz(float fuzz)
         {
-            var old = Fuzz;
             Fuzz = fuzz;
-            Children.ForEach(c => { if (Same(c.Fuzz, old)) c.SetFuzz(fuzz); });
+            Children.ForEach(c => c.SetFuzz(fuzz));
         }
 
         /*public void SetUseCustomSize(bool useCustomSize)
